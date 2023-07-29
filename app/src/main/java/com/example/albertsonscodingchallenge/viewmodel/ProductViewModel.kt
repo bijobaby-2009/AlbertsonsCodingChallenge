@@ -10,7 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-open class ProductViewModel(private val repository: ProductRepository) : ViewModel() {
+class ProductViewModel(private val repository: ProductRepository) : ViewModel() {
 
 
     private val _productList = MutableLiveData<List<Product>>()
