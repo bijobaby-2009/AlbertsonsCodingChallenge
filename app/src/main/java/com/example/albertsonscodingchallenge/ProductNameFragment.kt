@@ -7,12 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.albertsonscodingchallenge.api.ProductService
 import com.example.albertsonscodingchallenge.database.AppDatabase
 import com.example.albertsonscodingchallenge.databinding.FragmentProductNameBinding
+import com.example.albertsonscodingchallenge.api.NetworkState
 import com.example.albertsonscodingchallenge.repository.ProductRepository
 import com.example.albertsonscodingchallenge.viewmodel.ProductViewModel
 import com.example.albertsonscodingchallenge.viewmodelFactory.ProductNameViewModelFactory
@@ -48,7 +47,7 @@ class ProductNameFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        viewModel.isProductsAvailable.observe(this, Observer {
+        viewModel.isProductsAvailable.observe(viewLifecycleOwner) {
             if(it){
                 findNavController().navigate(R.id.action_productNameFragment_to_productListFragment)
                 viewModel.setSearchStatus(false)
@@ -61,9 +60,13 @@ class ProductNameFragment : Fragment() {
                 }
 
             }
+        }
 
-
-        })
+        viewModel.networkState.observe(viewLifecycleOwner){state->
+            if (state is NetworkState.Error) {
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
 }

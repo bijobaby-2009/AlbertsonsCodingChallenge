@@ -3,6 +3,7 @@ package com.example.albertsonscodingchallenge
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.example.albertsonscodingchallenge.api.NetworkState
 import com.example.albertsonscodingchallenge.api.ProductService
 import com.example.albertsonscodingchallenge.database.Product
 import com.example.albertsonscodingchallenge.database.ProductDao
@@ -18,6 +19,7 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+
 
 @ExperimentalCoroutinesApi
 class ProductRepositoryTest {
@@ -40,18 +42,25 @@ class ProductRepositoryTest {
     }
 
     @Test
-    fun testGetProducts() = runBlocking {
+    fun `getProducts with successful response`() = runBlocking {
         val query = "Test query"
-        val productList = listOf(
-            Product(1, "Product 1", "Description 1", 10.0, 0.0, 4.5, 10, "Brand 1", "Category 1", "thumbnail1", emptyList())
-        )
-        val productResponse = ProductResponse(productList,0,0,0)
-        `when`(productService.searchProducts(query)).thenReturn(productResponse)
-        `when`(productDao.insertProducts(productList)).thenReturn(Unit)
+        val productList = listOf(Product(1, "Product 1", "Description 1", 10.0, 0.0, 4.5, 10, "Brand 1", "Category 1", "", emptyList()))
+        val response = ProductResponse(productList, 1, 0, 10)
+        `when`(productService.searchProducts(query)).thenReturn(response)
         val result = productRepository.getProducts(query)
         Mockito.verify(productService).searchProducts(query)
         Mockito.verify(productDao).insertProducts(productList)
-        assertEquals(productList, result)
+        assertEquals(NetworkState.Success(productList), result)
+    }
+
+    @Test
+    fun `getProducts with exception`() = runBlocking {
+        val query = "Test query"
+        val exceptionMessage = "Failed to fetch products. Please try again later."
+        val exception = RuntimeException(exceptionMessage)
+        `when`(productService.searchProducts(query)).thenThrow(exception)
+        val result = productRepository.getProducts(query)
+        assertEquals(NetworkState.Error(exceptionMessage), result)
     }
 
     @Test

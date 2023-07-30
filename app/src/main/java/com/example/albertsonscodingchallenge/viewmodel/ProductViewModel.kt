@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.albertsonscodingchallenge.database.Product
+import com.example.albertsonscodingchallenge.api.NetworkState
 import com.example.albertsonscodingchallenge.repository.ProductRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,6 +22,10 @@ class ProductViewModel(private val repository: ProductRepository) : ViewModel() 
     val isProductsAvailable: LiveData<Boolean>
     get() = _isProductsAvailable
 
+    private val _networkState = MutableLiveData<NetworkState<List<Product>>>()
+    val networkState: LiveData<NetworkState<List<Product>>>
+    get() = _networkState
+
     private var searchStatus: Boolean = false
 
 
@@ -36,12 +41,13 @@ class ProductViewModel(private val repository: ProductRepository) : ViewModel() 
 
     fun fetchProductList( productNameValue: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val products = repository.getProducts(productNameValue)
+            val networkState = repository.getProducts(productNameValue)
             withContext(Dispatchers.Main) {
-                _isProductsAvailable.value = products.isNotEmpty()
+                _networkState.value = networkState
+                if (networkState is NetworkState.Success) {
+                    _isProductsAvailable.value = networkState.data.isNotEmpty()
+                }
             }
-
-
         }
     }
 
