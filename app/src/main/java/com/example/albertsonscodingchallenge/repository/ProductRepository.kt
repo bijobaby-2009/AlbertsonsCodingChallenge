@@ -1,12 +1,17 @@
 package com.example.albertsonscodingchallenge.repository
 
+import android.content.Context
 import androidx.lifecycle.LiveData
+import com.example.albertsonscodingchallenge.ProductNameFragment
+import com.example.albertsonscodingchallenge.R
 import com.example.albertsonscodingchallenge.api.ProductService
 import com.example.albertsonscodingchallenge.database.Product
 import com.example.albertsonscodingchallenge.database.ProductDao
 import com.example.albertsonscodingchallenge.api.NetworkState
+import retrofit2.HttpException
+import java.io.IOException
 
-class ProductRepository(private val productService: ProductService, private val productDao: ProductDao) {
+class ProductRepository(private val context: Context, private val productService: ProductService, private val productDao: ProductDao) {
 
     suspend fun getProducts(query: String): NetworkState<List<Product>> {
 
@@ -14,8 +19,12 @@ class ProductRepository(private val productService: ProductService, private val 
             val response = productService.searchProducts(query)
             productDao.insertProducts(response.products)
             NetworkState.Success(response.products)
-        }catch (e: Exception) {
-            NetworkState.Error("Failed to fetch products. Please try again later.")
+        } catch (e: HttpException) {
+            NetworkState.Error(context.getString(R.string.http_server_exception))
+        } catch (e: IOException) {
+            NetworkState.Error(context.getString(R.string.Io_Exception_Error))
+        } catch (e: Exception) {
+            NetworkState.Error(context.getString(R.string.normal_Exception_error))
         }
     }
 

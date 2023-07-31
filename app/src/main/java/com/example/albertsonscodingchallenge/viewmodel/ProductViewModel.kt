@@ -7,16 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.albertsonscodingchallenge.database.Product
 import com.example.albertsonscodingchallenge.api.NetworkState
 import com.example.albertsonscodingchallenge.repository.ProductRepository
+import com.example.albertsonscodingchallenge.util.NameErrorType
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ProductViewModel(private val repository: ProductRepository) : ViewModel() {
-
-
-    private val _productList = MutableLiveData<List<Product>>()
-    val productList: LiveData<List<Product>>
-    get() = _productList
 
     private val _isProductsAvailable = MutableLiveData<Boolean>(false)
     val isProductsAvailable: LiveData<Boolean>
@@ -26,8 +23,12 @@ class ProductViewModel(private val repository: ProductRepository) : ViewModel() 
     val networkState: LiveData<NetworkState<List<Product>>>
     get() = _networkState
 
-    private var searchStatus: Boolean = false
+    private val _productNameError = MutableLiveData<NameErrorType>(NameErrorType.NONE)
+    val productNameError: LiveData<NameErrorType>
+    get() = _productNameError
 
+    private var searchStatus: Boolean = false
+     val productName = MutableLiveData<String>("")
 
     fun updateProductStatus(){
         _isProductsAvailable.value =false
@@ -39,31 +40,44 @@ class ProductViewModel(private val repository: ProductRepository) : ViewModel() 
 
     fun getSearchStatus():Boolean=searchStatus
 
+
+    private fun hasSpecialCharacters(input: String): Boolean {
+        val pattern = "[^a-zA-Z0-9 ]".toRegex()
+        return pattern.containsMatchIn(input)
+    }
+
+
+    private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        _networkState.value = NetworkState.Error( throwable.message!!)
+    }
+
     fun fetchProductList( productNameValue: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val networkState = repository.getProducts(productNameValue)
-            withContext(Dispatchers.Main) {
-                _networkState.value = networkState
-                if (networkState is NetworkState.Success) {
-                    _isProductsAvailable.value = networkState.data.isNotEmpty()
+        if(productNameValue.isEmpty()){
+            _productNameError.value= NameErrorType.EMPTY
+        }
+        else if (hasSpecialCharacters(productNameValue)){
+            _productNameError.value=NameErrorType.SPECIAL
+        }
+        else{
+            viewModelScope.launch(Dispatchers.IO+coroutineExceptionHandler) {
+                deleteProducts()
+                setSearchStatus(true)
+                val networkState = repository.getProducts(productNameValue)
+                withContext(Dispatchers.Main) {
+                    _networkState.value = networkState
+                    if (networkState is NetworkState.Success) {
+                        _isProductsAvailable.value = networkState.data.isNotEmpty()
+                        _productNameError.value=NameErrorType.NONE
+                        productName.value=""
+                    }
                 }
             }
         }
+
     }
 
 
-    fun fetchProducts() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val response  = repository.getLocalProducts()
-            withContext(Dispatchers.Main) {
-                response.observeForever { productList->
-                    _productList.value=productList
-                }
-            }
 
-
-        }
-    }
 
     fun deleteProducts(){
         viewModelScope.launch(Dispatchers.IO){

@@ -13,33 +13,24 @@ import com.example.albertsonscodingchallenge.database.AppDatabase
 import com.example.albertsonscodingchallenge.databinding.FragmentProductNameBinding
 import com.example.albertsonscodingchallenge.api.NetworkState
 import com.example.albertsonscodingchallenge.repository.ProductRepository
+import com.example.albertsonscodingchallenge.util.NameErrorType
 import com.example.albertsonscodingchallenge.viewmodel.ProductViewModel
 import com.example.albertsonscodingchallenge.viewmodelFactory.ProductNameViewModelFactory
 
 class ProductNameFragment : Fragment() {
-    lateinit var binding: FragmentProductNameBinding
+    var _binding: FragmentProductNameBinding? =null
+    private val binding get() = _binding!!
     private val viewModel: ProductViewModel by viewModels {
         val productService = ProductService.create()
         val productDao = AppDatabase.getInstance(requireContext()).productDao()
-        ProductNameViewModelFactory(ProductRepository(productService, productDao))
+        ProductNameViewModelFactory(ProductRepository(requireContext(),productService, productDao))
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        binding = FragmentProductNameBinding.inflate(inflater, container, false)
+        _binding = FragmentProductNameBinding.inflate(inflater, container, false)
         binding.lifecycleOwner = viewLifecycleOwner
         binding.viewModel = viewModel
-        binding.btnViewProducts.setOnClickListener {
-            val productName = binding.tvProductName.text.toString()
-            if (productName.isNotEmpty()) {
-                viewModel.deleteProducts()
-                viewModel.fetchProductList(productName)
-                viewModel.setSearchStatus(true)
-            } else {
-                Toast.makeText(context,getString(R.string.enter_product_name),Toast.LENGTH_SHORT).show()
-            }
-        }
-
         return binding.root
     }
 
@@ -49,7 +40,10 @@ class ProductNameFragment : Fragment() {
 
         viewModel.isProductsAvailable.observe(viewLifecycleOwner) {
             if(it){
-                findNavController().navigate(R.id.action_productNameFragment_to_productListFragment)
+                val productName = binding.tvProductName.text.toString()
+                val action = ProductNameFragmentDirections.actionProductNameFragmentToProductListFragment(productName)
+                findNavController().navigate(action)
+
                 viewModel.setSearchStatus(false)
                 viewModel.updateProductStatus()
             }
@@ -67,6 +61,19 @@ class ProductNameFragment : Fragment() {
                 Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
             }
         }
+
+        viewModel.productNameError.observe(viewLifecycleOwner){state ->
+           when(state){
+               NameErrorType.EMPTY->  Toast.makeText(context,getString(R.string.enter_product_name),Toast.LENGTH_SHORT).show()
+               NameErrorType.SPECIAL->Toast.makeText(context,getString(R.string.product_special_characters),Toast.LENGTH_SHORT).show()
+               else -> {}
+           }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding=null
     }
 
 }

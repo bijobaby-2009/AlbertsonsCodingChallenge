@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.albertsonscodingchallenge.database.Product
 import com.example.albertsonscodingchallenge.databinding.ItemProductBinding
+import com.example.albertsonscodingchallenge.util.toFormattedPrice
 
 class ProductListAdapter : RecyclerView.Adapter<ProductListAdapter.ProductViewHolder>() {
     var productList= ArrayList<Product>()
@@ -35,6 +36,7 @@ class ProductListAdapter : RecyclerView.Adapter<ProductListAdapter.ProductViewHo
 
         fun bind(product: Product) {
             binding.product=product
+            binding.txtProductPrice.text = product.price.toFormattedPrice()
             Glide.with(binding.productImageView)
                 .load(product.images[0])
                 .centerCrop()

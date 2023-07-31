@@ -9,7 +9,7 @@ interface  ProductDao {
     @Query("SELECT * FROM product")
     fun getAllProducts(): LiveData<List<Product>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertProducts(products: List<Product>)
 
     @Query("DELETE FROM product")

@@ -12,13 +12,19 @@
         tools:layout="@layout/fragment_product_name">
         <action
             android:id="@+id/action_productNameFragment_to_productListFragment"
-            app:destination="@id/productListFragment" />
+            app:destination="@id/productListFragment" >
+
+        </action>
     </fragment>
 
     <fragment
         android:id="@+id/productListFragment"
         android:name="com.example.albertsonscodingchallenge.ProductListFragment"
-        android:label="Product List Fragment"
-        tools:layout="@layout/fragment_product_list" />
+        android:label="{productName}"
+        tools:layout="@layout/fragment_product_list" >
+        <argument
+            android:name="productName"
+            app:argType="string" />
+    </fragment>
 
 </navigation>
