@@ -4,15 +4,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.albertsonscodingchallenge.api.NetworkState
 import com.example.albertsonscodingchallenge.database.Product
 import com.example.albertsonscodingchallenge.repository.ProductRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class ProductListViewModel(private val repository: ProductRepository): ViewModel() {
+@HiltViewModel
+class ProductListViewModel @Inject constructor(private val repository: ProductRepository): ViewModel() {
 
     private val _productList = MutableLiveData<List<Product>>()
     val productList: LiveData<List<Product>>

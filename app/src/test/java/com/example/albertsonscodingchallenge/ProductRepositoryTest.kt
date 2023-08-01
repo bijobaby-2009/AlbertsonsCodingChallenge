@@ -1,5 +1,6 @@
 package com.example.albertsonscodingchallenge
 
+import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -33,12 +34,15 @@ class ProductRepositoryTest {
     @Mock
     private lateinit var productDao: ProductDao
 
+    @Mock
+    lateinit var context: Context
+
     private lateinit var productRepository: ProductRepository
 
     @Before
     fun setup() {
         MockitoAnnotations.initMocks(this)
-        productRepository = ProductRepository(productService, productDao)
+        productRepository = ProductRepository(context,productService, productDao)
     }
 
     @Test

@@ -8,23 +8,17 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.example.albertsonscodingchallenge.api.ProductService
-import com.example.albertsonscodingchallenge.database.AppDatabase
 import com.example.albertsonscodingchallenge.databinding.FragmentProductNameBinding
 import com.example.albertsonscodingchallenge.api.NetworkState
-import com.example.albertsonscodingchallenge.repository.ProductRepository
 import com.example.albertsonscodingchallenge.util.NameErrorType
 import com.example.albertsonscodingchallenge.viewmodel.ProductViewModel
-import com.example.albertsonscodingchallenge.viewmodelFactory.ProductNameViewModelFactory
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class ProductNameFragment : Fragment() {
     var _binding: FragmentProductNameBinding? =null
     private val binding get() = _binding!!
-    private val viewModel: ProductViewModel by viewModels {
-        val productService = ProductService.create()
-        val productDao = AppDatabase.getInstance(requireContext()).productDao()
-        ProductNameViewModelFactory(ProductRepository(requireContext(),productService, productDao))
-    }
+    private val viewModel: ProductViewModel by viewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {

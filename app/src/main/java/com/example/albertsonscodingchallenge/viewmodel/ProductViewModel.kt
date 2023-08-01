@@ -8,12 +8,14 @@ import com.example.albertsonscodingchallenge.database.Product
 import com.example.albertsonscodingchallenge.api.NetworkState
 import com.example.albertsonscodingchallenge.repository.ProductRepository
 import com.example.albertsonscodingchallenge.util.NameErrorType
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-class ProductViewModel(private val repository: ProductRepository) : ViewModel() {
+import javax.inject.Inject
+@HiltViewModel
+class ProductViewModel @Inject constructor(private val repository: ProductRepository) : ViewModel() {
 
     private val _isProductsAvailable = MutableLiveData<Boolean>(false)
     val isProductsAvailable: LiveData<Boolean>
@@ -68,7 +70,7 @@ class ProductViewModel(private val repository: ProductRepository) : ViewModel() 
                     if (networkState is NetworkState.Success) {
                         _isProductsAvailable.value = networkState.data.isNotEmpty()
                         _productNameError.value=NameErrorType.NONE
-                        productName.value=""
+                        if(networkState.data.isNotEmpty() )productName.value=""
                     }
                 }
             }

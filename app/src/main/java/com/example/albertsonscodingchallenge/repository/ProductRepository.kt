@@ -8,10 +8,12 @@ import com.example.albertsonscodingchallenge.api.ProductService
 import com.example.albertsonscodingchallenge.database.Product
 import com.example.albertsonscodingchallenge.database.ProductDao
 import com.example.albertsonscodingchallenge.api.NetworkState
+import dagger.hilt.android.qualifiers.ApplicationContext
 import retrofit2.HttpException
 import java.io.IOException
+import javax.inject.Inject
 
-class ProductRepository(private val context: Context, private val productService: ProductService, private val productDao: ProductDao) {
+class ProductRepository @Inject constructor(@ApplicationContext private val context: Context, private val productService: ProductService, private val productDao: ProductDao) {
 
     suspend fun getProducts(query: String): NetworkState<List<Product>> {
 
