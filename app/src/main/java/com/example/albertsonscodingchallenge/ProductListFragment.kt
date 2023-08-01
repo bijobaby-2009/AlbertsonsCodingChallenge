@@ -39,8 +39,10 @@ class ProductListFragment : Fragment() {
         binding.rvProductList.layoutManager = LinearLayoutManager(requireContext())
 
 
-
+        // call to database to fetch product list
         viewModel.fetchProducts()
+
+        //showing product lis in the recyclerview
         viewModel.productList.observe(viewLifecycleOwner) { products ->
             adapter.setList(products)
             adapter.notifyDataSetChanged()

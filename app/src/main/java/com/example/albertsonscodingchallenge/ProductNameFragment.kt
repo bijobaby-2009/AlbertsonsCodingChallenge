@@ -34,6 +34,7 @@ class ProductNameFragment : Fragment() {
 
         viewModel.isProductsAvailable.observe(viewLifecycleOwner) {
             if(it){
+                // navigate to product listing screen
                 val productName = binding.tvProductName.text.toString()
                 val action = ProductNameFragmentDirections.actionProductNameFragmentToProductListFragment(productName)
                 findNavController().navigate(action)
@@ -42,6 +43,7 @@ class ProductNameFragment : Fragment() {
                 viewModel.updateProductStatus()
             }
             else{
+                // show toast if product is not available
                 if(viewModel.getSearchStatus()){
                     Toast.makeText(context,getString(R.string.products_not_available),Toast.LENGTH_SHORT).show()
                     viewModel.setSearchStatus(false)
@@ -56,6 +58,7 @@ class ProductNameFragment : Fragment() {
             }
         }
 
+        // showing errors related to input
         viewModel.productNameError.observe(viewLifecycleOwner){state ->
            when(state){
                NameErrorType.EMPTY->  Toast.makeText(context,getString(R.string.enter_product_name),Toast.LENGTH_SHORT).show()

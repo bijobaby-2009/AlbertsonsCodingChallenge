@@ -12,6 +12,7 @@ import com.example.albertsonscodingchallenge.database.ProductResponse
 import com.example.albertsonscodingchallenge.repository.ProductRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import okhttp3.ResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -20,7 +21,9 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-
+import retrofit2.HttpException
+import retrofit2.Response
+import java.io.IOException
 
 @ExperimentalCoroutinesApi
 class ProductRepositoryTest {
@@ -42,7 +45,10 @@ class ProductRepositoryTest {
     @Before
     fun setup() {
         MockitoAnnotations.initMocks(this)
-        productRepository = ProductRepository(context,productService, productDao)
+        productRepository = ProductRepository(context, productService, productDao)
+        `when`(context.getString(R.string.http_server_exception)).thenReturn("HTTP Server Exception")
+        `when`(context.getString(R.string.Io_Exception_Error)).thenReturn("IO Exception Error")
+        `when`(context.getString(R.string.normal_Exception_error)).thenReturn("Normal Exception Error")
     }
 
     @Test
@@ -58,13 +64,34 @@ class ProductRepositoryTest {
     }
 
     @Test
-    fun `getProducts with exception`() = runBlocking {
+    fun `getProducts with HttpException`() = runBlocking {
+
         val query = "Test query"
-        val exceptionMessage = "Failed to fetch products. Please try again later."
-        val exception = RuntimeException(exceptionMessage)
+        `when`(productService.searchProducts(query)).thenThrow(HttpException(Response.error<Any>(400, ResponseBody.create(null, ""))))
+        val result = productRepository.getProducts(query)
+        assertEquals(NetworkState.Error("HTTP Server Exception"), result)
+    }
+
+    @Test
+    fun `getProducts with IOException`() = runBlocking {
+        val query = "Test query"
+        val productList = listOf(Product(1, "Product 1", "Description 1", 10.0, 0.0, 4.5, 10, "Brand 1", "Category 1", "", emptyList()))
+        val response = ProductResponse(productList, 1, 0, 10)
+        `when`(productService.searchProducts(query)).thenAnswer {
+            throw IOException()
+        }
+        val result = productRepository.getProducts(query)
+        assertEquals(NetworkState.Error("IO Exception Error"), result)
+    }
+
+    @Test
+    fun `getProducts with generic exception`() = runBlocking {
+
+        val query = "Test query"
+        val exception = RuntimeException()
         `when`(productService.searchProducts(query)).thenThrow(exception)
         val result = productRepository.getProducts(query)
-        assertEquals(NetworkState.Error(exceptionMessage), result)
+        assertEquals(NetworkState.Error("Normal Exception Error"), result)
     }
 
     @Test

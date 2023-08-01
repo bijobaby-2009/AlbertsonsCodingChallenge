@@ -53,6 +53,7 @@ class ProductViewModel @Inject constructor(private val repository: ProductReposi
         _networkState.value = NetworkState.Error( throwable.message!!)
     }
 
+    // fetching data from the API
     fun fetchProductList( productNameValue: String) {
         if(productNameValue.isEmpty()){
             _productNameError.value= NameErrorType.EMPTY
@@ -80,7 +81,7 @@ class ProductViewModel @Inject constructor(private val repository: ProductReposi
 
 
 
-
+    // To clear data stored in the database
     fun deleteProducts(){
         viewModelScope.launch(Dispatchers.IO){
             repository.deleteAllProducts()

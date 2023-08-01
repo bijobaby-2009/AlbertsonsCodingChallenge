@@ -28,6 +28,7 @@ class ProductListViewModel @Inject constructor(private val repository: ProductRe
         _fetchError.value = throwable.message!!
     }
 
+    // fetching products data from the database
     fun fetchProducts() {
         viewModelScope.launch(Dispatchers.IO+coroutineExceptionHandler) {
             val response  = repository.getLocalProducts()

@@ -27,9 +27,6 @@ class ProductListViewModelTest {
     @Mock
     lateinit var productListObserver: Observer<List<Product>>
 
-    @Mock
-    lateinit var fetchErrorObserver: Observer<String>
-
     private val testDispatcher = TestCoroutineDispatcher()
 
     private lateinit var viewModel: ProductListViewModel

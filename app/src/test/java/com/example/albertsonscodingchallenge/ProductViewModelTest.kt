@@ -50,7 +50,6 @@ class ProductViewModelTest {
         viewModel = ProductViewModel(repository)
         productListObserver = mock(Observer::class.java) as Observer<List<Product>>
         isProductsAvailableObserver = mock(Observer::class.java) as Observer<Boolean>
-        viewModel.productList.observeForever(productListObserver)
         viewModel.isProductsAvailable.observeForever(isProductsAvailableObserver)
         Dispatchers.setMain(testDispatcher)
     }
@@ -59,7 +58,6 @@ class ProductViewModelTest {
     fun tearDown() {
         Dispatchers.resetMain()
         testDispatcher.cleanupTestCoroutines()
-        viewModel.productList.removeObserver(productListObserver)
         viewModel.isProductsAvailable.removeObserver(isProductsAvailableObserver)
     }
 
@@ -110,7 +108,7 @@ class ProductViewModelTest {
         val query = "Test query"
         val exception = "Failed to fetch products. Please try again later."
         val response = NetworkState.Error(exception)
-        `when`(repository.getProducts(query)).thenReturn(response)
+        `when`(repository.getProducts(query)).thenThrow(RuntimeException(exception))
 
         viewModel.fetchProductList(query)
 
@@ -130,31 +128,6 @@ class ProductViewModelTest {
         assertEquals(false, viewModel.isProductsAvailable.value)
     }
 
-    @Test
-    fun `fetchProducts should call getLocalProducts from repository and update productList LiveData`() =
-        testScope.runBlockingTest {
-            val dummyProductList = listOf(
-                Product(1, "Product 1", "Description 1", 10.0, 0.0, 4.5, 10, "Brand 1", "Category 1", "thumbnail1", emptyList())
-            )
-            val liveData: LiveData<List<Product>> = MutableLiveData(dummyProductList)
-            `when`(repository.getLocalProducts()).thenReturn(liveData)
-
-            viewModel.fetchProducts()
-
-            advanceUntilIdle()
-
-            verify(repository).getLocalProducts()
-
-            val latch = CountDownLatch(1)
-            var capturedProductList: List<Product>? = null
-            viewModel.productList.observeForever { productList ->
-                capturedProductList = productList
-                latch.countDown()
-            }
-
-            assertTrue(latch.await(5000, TimeUnit.MILLISECONDS))
-            assertEquals(dummyProductList, capturedProductList)
-        }
 
     @Test
     fun `deleteProducts should call deleteAllProducts from repository`() = testScope.runBlockingTest {

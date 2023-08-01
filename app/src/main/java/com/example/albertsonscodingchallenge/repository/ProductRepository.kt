@@ -18,8 +18,8 @@ class ProductRepository @Inject constructor(@ApplicationContext private val cont
     suspend fun getProducts(query: String): NetworkState<List<Product>> {
 
         return try {
-            val response = productService.searchProducts(query)
-            productDao.insertProducts(response.products)
+            val response = productService.searchProducts(query) // api call
+            productDao.insertProducts(response.products) // saving data to database
             NetworkState.Success(response.products)
         } catch (e: HttpException) {
             NetworkState.Error(context.getString(R.string.http_server_exception))
